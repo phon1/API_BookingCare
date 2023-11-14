@@ -7,7 +7,10 @@ module.exports = {
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
-      },      
+      },  
+      Name: {
+        type: Sequelize.STRING
+      },    
       description: {
         type: Sequelize.TEXT
       },
