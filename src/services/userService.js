@@ -117,25 +117,26 @@ let createNewUser = (data) => {
             if (check == true) {
                 resolve({
                     errCode: 1,
-                    message: 'Your email is already used, Plz try order email'
+                    errMessage: 'Your email is already used, Plz try order email'
                 })
+            } else {
+                let hashPasswordFromBcrypt = await hashUserPassword(data.password)
+                await db.User.create({
+                    email: data.email,
+                    password: hashPasswordFromBcrypt,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    address: data.address,
+                    phonenumber: data.phonenumber,
+                    gender: data.gender === '1' ? true : false,
+                    roleId: data.roleId
+                })
+    
+                resolve({
+                    errCode: 0,
+                    message: 'OK'
+                });
             }
-            let hashPasswordFromBcrypt = await hashUserPassword(data.password)
-            await db.User.create({
-                email: data.email,
-                password: hashPasswordFromBcrypt,
-                firstName: data.firstName,
-                lastName: data.lastName,
-                address: data.address,
-                phonenumber: data.phonenumber,
-                gender: data.gender === '1' ? true : false,
-                roleId: data.roleId
-            })
-
-            resolve({
-                errCode: 0,
-                message: 'OK'
-            });
         } catch (error) {
             reject(error)
         }
@@ -153,15 +154,17 @@ let deleteUser = (userId) => {
                 errMessage: `The user isn't exist`
             })
         }
+        else {
+            await db.User.destroy({
+                where: { id: userId }
+            });
+    
+            resolve({
+                errCode: 0,
+                message: 'The user is deleted'
+            })
+        }
 
-        await db.User.destroy({
-            where: { id: userId }
-        });
-
-        resolve({
-            errCode: 0,
-            message: 'The user is deleted'
-        })
     })
 }
 
@@ -185,11 +188,6 @@ let updateUserData = (data) => {
                 user.address = data.address;
 
                 await user.save()
-                // await db.User.save({
-                //     firstName: data.firstName,
-                //     lastName: data.lastName,
-                //     address: data.address
-                // })
 
                 resolve({
                     errCode: 0,
