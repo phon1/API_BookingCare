@@ -1,36 +1,36 @@
 import bcrypt from 'bcryptjs';
 import db from "../models/index"
 
-let handleUserLogin = (email,password) => {
-    return new Promise(async(resolve,reject) => {
+let handleUserLogin = (email, password) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            let userData= {};
+            let userData = {};
             let isExist = await checkUserEmail(email);
 
-            if(!isExist) {
+            if (!isExist) {
                 userData.errCode = 1;
                 userData.errMessage = `Your's Email isn't exist in your system. Please try other email!`
                 resolve(userData)
-            } else{
+            } else {
                 let user = await db.User.findOne({
-                    attributes : ['email', 'roleId', 'password'],
-                    where : { email: email},
-                    raw : true
+                    attributes: ['email', 'roleId', 'password'],
+                    where: { email: email },
+                    raw: true
                 });
-                if(!user){
+                if (!user) {
                     userData.errCode = 2;
                     userData.errMessage = `User's not found`
                     resolve(userData)
-                } else{
+                } else {
                     let check = await bcrypt.compareSync(password, user.password)
-                    if(check) {
+                    if (check) {
                         userData.errCode = 0;
-                        userData.errMessage= 'Ok';
+                        userData.errMessage = 'Ok';
                         userData.user = user;
                         delete user.password;
                     } else {
                         userData.errCode = 3;
-                        userData.errMessage= 'Wrong password';
+                        userData.errMessage = 'Wrong password';
                     }
                     resolve(userData)
 
@@ -45,7 +45,7 @@ let handleUserLogin = (email,password) => {
 let compareUserPassword = () => {
     return new Promise((resolve, reject) => {
         try {
-            
+
         } catch (error) {
             reject(error);
         }
@@ -53,15 +53,15 @@ let compareUserPassword = () => {
 }
 
 let checkUserEmail = (userEmail) => {
-    return new Promise (async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
             let user = await db.User.findOne({
-                where: {email: userEmail}
+                where: { email: userEmail }
             })
 
-            if(user){
+            if (user) {
                 resolve(true)
-            } else{
+            } else {
                 resolve(false)
             }
         } catch (error) {
@@ -69,6 +69,33 @@ let checkUserEmail = (userEmail) => {
         }
     })
 }
+
+let getAllUsers = (userId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let users = '';
+            console.log(userId)
+            if (userId === 'ALL') {
+                users = await db.User.findAll({
+                    attributes: {
+                        exclude: ['password']
+                    }
+                })
+            }
+            if (userId && userId !== 'ALL') {
+                users = await db.User.findOne({
+                    where: { id: userId }
+                })
+            }
+
+            resolve(users)
+
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
 module.exports = {
-    handleUserLogin: handleUserLogin
+    handleUserLogin: handleUserLogin,
+    getAllUsers: getAllUsers
 }
