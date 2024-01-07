@@ -314,7 +314,7 @@ let getExtraInforDoctorByIdService = (doctorId) => {
     })
 }
 
-let getProfileDoctorByIdService = (inputId) {
+let getProfileDoctorByIdService = (inputId) => {
     return new Promise(async (resolve,reject) => {
         try {
             if (!inputId){
