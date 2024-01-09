@@ -1,22 +1,31 @@
 require('dotenv').config();
+import { reject } from 'lodash';
 import db from '../models/index';
 import emailService from './emailService'
+import {v4 as uuidv4 } from 'uuid';
+
+let buildUrEmail = (doctorId, token) => {
+    let result = `${process.env.URL_REACT}/verify-booking?${token}&doctorId=${doctorId}`
+    return result
+}
 
 let patientBookingAppointmentService = (data) => {
     return new Promise(async (resolve,reject) => {
         try {
-            if(!data.email) {
+            if(!data.email || !data.doctorId || !data.timeType || !data.date || !data.fullName) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing paramater!'
                 })
             } else {
+
+                let token = uuidv4()
                 await emailService.sendSimpleEmail({
                     reciverEmail: data.email,
-                    patientName: 'Bệnh nhân A',
-                    time: '8.00 - 9.00 Thứ hai 8/1/2024',
-                    doctorName: "PhongUIT",
-                    redirectLink: "daa.uit.edu.vn"
+                    patientName: data.fullName,
+                    time: data.timeString,
+                    doctorName: data.language,
+                    redirectLink: buildUrEmail(data.doctorId, token)
                 })
                 //upsert patient
                 let user = await db.User.findOrCreate({
@@ -36,7 +45,8 @@ let patientBookingAppointmentService = (data) => {
                             doctorId: data.doctorId,
                             patientId: user[0].id,
                             date: data.date,
-                            timeType: data.timeType
+                            timeType: data.timeType,
+                            token: token
                         }
         
                     })
@@ -45,11 +55,56 @@ let patientBookingAppointmentService = (data) => {
                 resolve({
                     data:user,
                     errCode: 0,
-                    Message: 'Save infor doctor succeed'
+                    errMessage: 'Save infor doctor succeed'
                 })
             }
         } catch (e) {
             reject(e)
         }
     })
+}
+
+let verifyBookAppointmentService = (data) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if(!data.token || !data.doctorId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter!!'
+                })
+            } else {
+                let appointment = await db.Booking.findOne({
+                    where: {
+                        doctorId: data.doctorId,
+                        token: data.token,
+                        statusId: 'S1'
+                    },
+                    raw: false
+                })
+
+                if(appointment) {
+                    appointment.statusId = 'S2';
+                    await appointment.save();
+
+                    resolve({
+                        errCode: 0,
+                        errMessage: "Update the appointment succeed!"
+                    })
+                } else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: "Appointment has been activated or does not exist"
+                    })
+                }
+            }
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+module.exports = {
+    patientBookingAppointmentService: patientBookingAppointmentService,
+    verifyBookAppointmentService: verifyBookAppointmentService,
 }

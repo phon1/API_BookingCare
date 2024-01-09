@@ -137,7 +137,7 @@ let createNewUser = (data) => {
     
                 resolve({
                     errCode: 0,
-                    message: 'OK'
+                    errMessage: 'OK'
                 });
             }
         } catch (error) {
@@ -164,7 +164,7 @@ let deleteUser = (userId) => {
     
             resolve({
                 errCode: 0,
-                message: 'The user is deleted'
+                errMessage: 'The user is deleted'
             })
         }
 
@@ -200,7 +200,7 @@ let updateUserData = (data) => {
 
                 resolve({
                     errCode: 0,
-                    message: 'Update the user succeeds!'
+                    errMessage: 'Update the user succeeds!'
                 })
             } else{
                 resolve({

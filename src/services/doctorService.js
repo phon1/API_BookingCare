@@ -124,7 +124,7 @@ let postInfoDoctorService = (inputData) => {
 
                 resolve({
                     errCode: 0,
-                    Message: 'Save infor doctor succeed!'
+                    errMessage: 'Save infor doctor succeed!'
                 })
             }
 
@@ -226,7 +226,7 @@ let bulkCreateScheduleService = (data) => {
 
                 resolve({
                     errCode: 0,
-                    Message: 'OK'
+                    errMessage: 'OK'
                 })
             }
 
